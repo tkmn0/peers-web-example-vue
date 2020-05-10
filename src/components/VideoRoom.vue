@@ -2,10 +2,13 @@
   <v-app id="inspire">
     <v-content>
       <v-container class="grey lighten-5" fluid style="height: 100%">
-        <v-btn @click="rtcManager.setupLocalStream">{{
-          rtcManager.localStream == null
-        }}</v-btn>
-        <v-btn @click="rtcManager.call()">call</v-btn>
+        <v-btn
+          v-if="rtcManager.localStream == null"
+          @click="rtcManager.setupLocalStream"
+        ></v-btn>
+        <v-btn v-else-if="!rtcManager.roomJoined" @click="rtcManager.call()"
+          >call</v-btn
+        >
         <v-row
           class="blue lighten-4"
           justify="start"
@@ -13,8 +16,6 @@
           dense
           style="height: 100%;"
         >
-          <!-- <Video :stream="rtcManager.localStream" :is-local="true"></Video> -->
-
           <v-col
             v-for="(model, index) in rtcManager.rtcMediaModels"
             :key="index"
@@ -22,9 +23,6 @@
             sm="6"
             md="4"
           >
-            <!-- <v-card class="pa-10" outlined tile height="300">
-              {{ client.id }}
-            </v-card> -->
             <Video :stream="model.stream" :is-local="model.isLocal"></Video>
           </v-col>
         </v-row>

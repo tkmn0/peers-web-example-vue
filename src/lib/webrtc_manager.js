@@ -28,6 +28,8 @@ export default class WebRTCManager {
    */
   rtcMediaModels = [];
 
+  roomJoined = false;
+
   constructor() {
     this.webrtcCallbacks.OnSdpCreated = this.onSdpCreated;
     this.webrtcCallbacks.OnCandidateCreated = this.onCandidateCreated;
@@ -52,6 +54,8 @@ export default class WebRTCManager {
     };
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      const model = new WebRTCMediaModel("", this.localStream, true);
+      this.rtcMediaModels.push(model);
     } catch (err) {
       console.log(err);
     }
@@ -88,12 +92,7 @@ export default class WebRTCManager {
       rtcClient.addLocalStream(this.localStream);
       rtcClient.createOffer();
     });
-    const model = new WebRTCMediaModel(
-      this.socketIo.id,
-      this.localStream,
-      true
-    );
-    this.rtcMediaModels.push(model);
+    this.roomJoined = true;
   };
 
   /**

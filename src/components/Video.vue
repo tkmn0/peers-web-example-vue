@@ -16,10 +16,6 @@ export default {
   props: {
     stream: MediaStream,
     isLocal: Boolean
-  },
-  mounted: function() {
-    console.log(this.stream);
-    console.log(this.isLocal);
   }
 };
 </script>
