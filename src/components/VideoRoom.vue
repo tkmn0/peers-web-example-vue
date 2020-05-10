@@ -2,7 +2,6 @@
   <v-app id="inspire">
     <v-content>
       <v-container class="grey lighten-5" fluid style="height: 100%">
-        <!-- <v-btn @click="counter += 1">Test Add</v-btn> -->
         <v-btn @click="rtcManager.setupLocalStream">{{
           rtcManager.localStream == null
         }}</v-btn>
@@ -14,10 +13,19 @@
           dense
           style="height: 100%;"
         >
-          <v-col v-for="n in counter" :key="n" xs="12" sm="6" md="4">
-            <v-card class="pa-10" outlined tile height="300">
-              One of three columns
-            </v-card>
+          <!-- <Video :stream="rtcManager.localStream" :is-local="true"></Video> -->
+
+          <v-col
+            v-for="(model, index) in rtcManager.rtcMediaModels"
+            :key="index"
+            xs="12"
+            sm="6"
+            md="4"
+          >
+            <!-- <v-card class="pa-10" outlined tile height="300">
+              {{ client.id }}
+            </v-card> -->
+            <Video :stream="model.stream" :is-local="model.isLocal"></Video>
           </v-col>
         </v-row>
       </v-container>
@@ -27,15 +35,19 @@
 
 <script>
 import WebRTCManager from "@/lib/webrtc_manager";
+import Video from "@/components/Video.vue";
 
 export default {
   name: "VideoRoom",
+  components: { Video },
   data: function() {
     return {
-      counter: 0,
       rtcManager: new WebRTCManager()
     };
   },
-  mounted: function() {}
+  mounted: function() {},
+  destroyed: function() {
+    this.rtcManager.destroy();
+  }
 };
 </script>
