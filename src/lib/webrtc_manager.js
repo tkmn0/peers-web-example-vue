@@ -46,7 +46,7 @@ export default class WebRTCManager {
   setupLocalStream = async () => {
     this.testFlag = !this.testFlag;
     const constraints = {
-      width: { min: 320, ideal: 640, max: 1280 },
+      width: { min: 320, ideal: 320, max: 640 },
       height: { ideal: 360 },
       video: true,
       audio: true,

@@ -5,9 +5,10 @@
         <v-btn
           v-if="rtcManager.localStream == null"
           @click="rtcManager.setupLocalStream"
-        ></v-btn>
+          >CAMERA</v-btn
+        >
         <v-btn v-else-if="!rtcManager.roomJoined" @click="rtcManager.call()"
-          >call</v-btn
+          >JOIN</v-btn
         >
         <v-row
           class="blue lighten-4"
