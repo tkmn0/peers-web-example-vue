@@ -41,6 +41,20 @@ export default class WebRTCClient {
     peer.ontrack = evt => this.callbacks.OnAddTrack(this.id, evt.streams[0]);
     peer.onicecandidate = evt =>
       this.callbacks.OnCandidateCreated(this.id, evt.candidate);
+    peer.oniceconnectionstatechange = () => {
+      switch (peer.iceConnectionState) {
+        case "failed":
+        case "closed":
+        case "disconnected":
+          console.log("peer dissconnect");
+          if (!this.peer) return;
+          peer.close();
+          this.peer = null;
+          this.callbacks.OnDisconnected(this.id);
+          break;
+      }
+    };
+
     return peer;
   };
 

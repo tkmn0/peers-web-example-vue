@@ -34,6 +34,7 @@ export default class WebRTCManager {
     this.webrtcCallbacks.OnSdpCreated = this.onSdpCreated;
     this.webrtcCallbacks.OnCandidateCreated = this.onCandidateCreated;
     this.webrtcCallbacks.OnAddTrack = this.onAddTrack;
+    this.webrtcCallbacks.OnDisconnected = this.onDisconnected;
   }
 
   destroy() {
@@ -199,6 +200,14 @@ export default class WebRTCManager {
       const model = new WebRTCMediaModel(id, stream, false);
       this.rtcMediaModels.push(model);
     }
+  };
+
+  /**
+   * @type {OnDisconnected}
+   */
+  onDisconnected = id => {
+    this.rtcClients = this.rtcClients.filter(x => x.id !== id);
+    this.rtcMediaModels = this.rtcMediaModels.filter(x => x.id !== id);
   };
   //#endregion
 }
