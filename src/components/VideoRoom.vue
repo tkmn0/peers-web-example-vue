@@ -7,9 +7,7 @@
           @click="rtcManager.setupLocalStream"
           >CAMERA</v-btn
         >
-        <v-btn v-else-if="!rtcManager.roomJoined" @click="rtcManager.call()"
-          >JOIN</v-btn
-        >
+        <v-btn v-else-if="!rtcManager.roomJoined" @click="call">JOIN</v-btn>
         <v-row
           class="blue lighten-4"
           justify="start"
@@ -44,9 +42,18 @@ export default {
       rtcManager: new WebRTCManager()
     };
   },
-  mounted: function() {},
   destroyed: function() {
     this.rtcManager.destroy();
+  },
+  methods: {
+    call: function() {
+      const roomId = this.$route.params.roomId;
+      if (roomId) {
+        this.rtcManager.joinRoom(roomId);
+      } else {
+        this.rtcManager.createRoom();
+      }
+    }
   }
 };
 </script>

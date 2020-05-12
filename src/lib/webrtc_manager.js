@@ -29,12 +29,14 @@ export default class WebRTCManager {
   rtcMediaModels = [];
 
   roomJoined = false;
+  roomId = "";
 
   constructor() {
     this.webrtcCallbacks.OnSdpCreated = this.onSdpCreated;
     this.webrtcCallbacks.OnCandidateCreated = this.onCandidateCreated;
     this.webrtcCallbacks.OnAddTrack = this.onAddTrack;
     this.webrtcCallbacks.OnDisconnected = this.onDisconnected;
+    this.setupWebsocket();
   }
 
   destroy() {
@@ -62,7 +64,7 @@ export default class WebRTCManager {
     }
   };
 
-  call = () => {
+  setupWebsocket = () => {
     let url = location.hostname;
     if (process.env.NODE_ENV == "development") {
       url += ":3001";
@@ -71,10 +73,24 @@ export default class WebRTCManager {
     this.setupSignalingEvent();
   };
 
+  joinRoom = roomId => {
+    this.socketIo.emit("joinRoom", {
+      data: {
+        roomId: roomId
+      }
+    });
+  };
+
+  createRoom = () => {
+    this.socketIo.emit("createRoom", "", evt => {
+      this.roomId = evt.data.roomId;
+      console.log("room created: ", this.roomId);
+    });
+  };
+
   //#region Websocket
   setupSignalingEvent = () => {
     this.socketIo.on("connect", () => {
-      console.log("socket connected");
       console.log("local socket id: ", this.socketIo.id);
     });
     this.socketIo.on("call", evt => this.handleCall(evt.data.ids));
