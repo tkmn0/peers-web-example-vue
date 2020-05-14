@@ -2,12 +2,31 @@
   <v-app id="inspire">
     <v-content>
       <v-container class="grey lighten-5" fluid style="height: 100%">
-        <v-btn
-          v-if="rtcManager.localStream == null"
-          @click="rtcManager.setupLocalStream"
-          >CAMERA</v-btn
-        >
-        <v-btn v-else-if="!rtcManager.roomJoined" @click="call">JOIN</v-btn>
+        <v-spacer></v-spacer>
+        <v-toolbar dense flat>
+          <v-btn
+            v-if="rtcManager.localStream == null"
+            @click="rtcManager.setupLocalStream"
+            >CAMERA</v-btn
+          >
+          <v-btn v-else-if="!rtcManager.roomJoined" @click="call">JOIN</v-btn>
+          <v-spacer></v-spacer>
+          <v-btn v-if="rtcManager.roomId" @click="copyLink">
+            invite link
+          </v-btn>
+          <v-snackbar
+            v-model="snackbar"
+            :timeout="2000"
+            :top="true"
+            :right="true"
+          >
+            {{ text }}
+            <v-btn dark text @click="snackbar = false">
+              Close
+            </v-btn>
+          </v-snackbar>
+        </v-toolbar>
+
         <v-row
           class="blue lighten-4"
           justify="start"
@@ -39,13 +58,23 @@ export default {
   components: { Video },
   data: function() {
     return {
-      rtcManager: new WebRTCManager()
+      rtcManager: new WebRTCManager(),
+      snackbar: false,
+      text: "link copied!"
     };
   },
   destroyed: function() {
     this.rtcManager.destroy();
   },
   methods: {
+    copyLink: function() {
+      let link = window.location.href;
+      if (!this.$route.params.roomId) {
+        link += this.rtcManager.roomId;
+      }
+      navigator.clipboard.writeText(link);
+      this.snackbar = true;
+    },
     call: function() {
       const roomId = this.$route.params.roomId;
       if (roomId) {

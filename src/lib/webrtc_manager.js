@@ -79,12 +79,14 @@ export default class WebRTCManager {
         roomId: roomId
       }
     });
+    this.roomId = roomId;
   };
 
   createRoom = () => {
     this.socketIo.emit("createRoom", "", evt => {
       this.roomId = evt.data.roomId;
       console.log("room created: ", this.roomId);
+      this.roomJoined = true;
     });
   };
 
