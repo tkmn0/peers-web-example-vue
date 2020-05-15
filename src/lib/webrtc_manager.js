@@ -101,6 +101,9 @@ export default class WebRTCManager {
     this.socketIo.on("remote-candidate", evt =>
       this.handleRemoteCandidate(evt)
     );
+    this.socketIo.on("remote-disconnected", evt =>
+      this.handleRemoteDisconnected(evt.data.id)
+    );
   };
 
   handleCall = ids => {
@@ -162,6 +165,15 @@ export default class WebRTCManager {
     if (!rtcClient) return;
 
     rtcClient.setRemoteCandidate(message.data.candidate);
+  };
+
+  /**
+   * @param {string} id
+   */
+  handleRemoteDisconnected = id => {
+    console.log("handle remote disconnected:", id);
+    this.rtcClients = this.rtcClients.filter(x => x.id != id);
+    this.rtcMediaModels = this.rtcMediaModels.filter(x => x.id != id);
   };
   //#endregion
 
