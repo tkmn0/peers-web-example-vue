@@ -23,6 +23,11 @@ export default class WebRTCClient {
   rtpSender = [];
 
   /**
+   * @type {MediaStream} remote media stream
+   */
+  remoteStream;
+
+  /**
    *
    * @param {string} id
    * @param {WebRTCCallbacks} callbacks
@@ -38,7 +43,10 @@ export default class WebRTCClient {
       iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
     };
     const peer = new RTCPeerConnection(pc_config);
-    peer.ontrack = evt => this.callbacks.OnAddTrack(this.id, evt.streams[0]);
+    peer.ontrack = evt => {
+      this.remoteStream = evt.streams[0];
+      this.callbacks.OnAddTrack(this.id, evt.streams[0]);
+    };
     peer.onicecandidate = evt =>
       this.callbacks.OnCandidateCreated(this.id, evt.candidate);
     peer.oniceconnectionstatechange = () => {

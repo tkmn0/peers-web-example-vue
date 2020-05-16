@@ -9,7 +9,7 @@
             @click="rtcManager.setupLocalStream"
             >CAMERA</v-btn
           >
-          <v-btn v-else-if="!rtcManager.roomJoined" @click="call">JOIN</v-btn>
+          <v-btn v-else-if="!rtcManager.roomJoined()" @click="call">JOIN</v-btn>
           <v-spacer></v-spacer>
           <v-btn v-if="rtcManager.roomId" @click="copyLink">
             invite link
@@ -35,7 +35,7 @@
           style="height: 100%;"
         >
           <v-col
-            v-for="(model, index) in rtcManager.rtcMediaModels"
+            v-for="(model, index) in rtcManager.getModels()"
             :key="index"
             xs="12"
             sm="6"

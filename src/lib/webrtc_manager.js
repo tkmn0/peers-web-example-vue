@@ -1,7 +1,6 @@
 import * as SocketIo from "socket.io-client";
 import WebRTCClient from "./webrtc_client";
 import "./rtc_typedef";
-import WebRTCMediaModel from "./webrtc_media_model";
 
 export default class WebRTCManager {
   /**
@@ -23,12 +22,29 @@ export default class WebRTCManager {
    */
   webrtcCallbacks = {};
 
-  /**
-   * @type {WebRTCMediaModel[]}
-   */
-  rtcMediaModels = [];
+  getModels = () => {
+    /**
+     * @type {WebRTCMediaModel[]}
+     */
+    const models = [];
+    if (this.localStream) {
+      models.push({
+        stream: this.localStream,
+        id: this.socketIo.id,
+        isLocal: true
+      });
+    }
+    this.rtcClients.forEach(client =>
+      models.push({
+        stream: client.remoteStream,
+        id: client.id,
+        isLocal: false
+      })
+    );
+    return models;
+  };
 
-  roomJoined = false;
+  roomJoined = () => this.roomId != "";
   roomId = "";
 
   constructor() {
@@ -57,8 +73,6 @@ export default class WebRTCManager {
     };
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
-      const model = new WebRTCMediaModel("", this.localStream, true);
-      this.rtcMediaModels.push(model);
     } catch (err) {
       console.log(err);
     }
@@ -86,7 +100,6 @@ export default class WebRTCManager {
     this.socketIo.emit("createRoom", "", evt => {
       this.roomId = evt.data.roomId;
       console.log("room created: ", this.roomId);
-      this.roomJoined = true;
     });
   };
 
@@ -114,7 +127,6 @@ export default class WebRTCManager {
       rtcClient.addLocalStream(this.localStream);
       rtcClient.createOffer();
     });
-    this.roomJoined = true;
   };
 
   /**
@@ -173,7 +185,6 @@ export default class WebRTCManager {
   handleRemoteDisconnected = id => {
     console.log("handle remote disconnected:", id);
     this.rtcClients = this.rtcClients.filter(x => x.id != id);
-    this.rtcMediaModels = this.rtcMediaModels.filter(x => x.id != id);
   };
   //#endregion
 
@@ -222,14 +233,7 @@ export default class WebRTCManager {
    * @type {OnAddTrack}
    */
   onAddTrack = (id, stream) => {
-    console.log(id, " - on add track");
-    const already = this.rtcMediaModels.find(x => x.id == id);
-    if (already) {
-      already.stream = stream;
-    } else {
-      const model = new WebRTCMediaModel(id, stream, false);
-      this.rtcMediaModels.push(model);
-    }
+    console.log(id, " - on add track: ", stream.id);
   };
 
   /**
