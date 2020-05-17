@@ -1,12 +1,26 @@
 <template>
-  <v-card class="pa-10" outlined tile height="300">
+  <v-card
+    v-if="stream"
+    class="ma-0 pa-0  white d-flex justify-center"
+    outlined
+    tile
+    height="200"
+  >
     <video
       autoplay
       playsinline
       :srcObject.prop="stream"
       :muted="isLocal"
-      class="video pr-2"
+      width="100%"
+      class="pa-2"
     ></video>
+    <div class="controls">
+      <v-icon v-if="isVideoEnable" color="black">mdi-video</v-icon>
+      <v-icon v-else color="red">mdi-video-off</v-icon>
+      <br />
+      <v-icon v-if="isAudioEnable" color="black">mdi-microphone</v-icon>
+      <v-icon v-else color="red">mdi-microphone-off</v-icon>
+    </div>
   </v-card>
 </template>
 
@@ -15,16 +29,20 @@ export default {
   name: "Video",
   props: {
     stream: MediaStream,
-    isLocal: Boolean
+    isLocal: Boolean,
+    isVideoEnable: Boolean,
+    isAudioEnable: Boolean
   }
 };
 </script>
 
 <style scoped>
 .video {
-  position: relative;
-  height: 100%;
-  top: 0;
-  left: 0;
+  position: absolute;
+}
+.controls {
+  position: absolute;
+  bottom: 0;
+  right: 10px;
 }
 </style>

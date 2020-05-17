@@ -40,10 +40,40 @@
             xs="12"
             sm="6"
             md="4"
+            lg="3"
           >
             <Video :stream="model.stream" :is-local="model.isLocal"></Video>
           </v-col>
         </v-row>
+
+        <!-- <v-col>
+          <v-row
+            v-for="(model, index) in rtcManager.getModels()"
+            :key="index"
+            class="blue lighten-4"
+            justify="start"
+          >
+            <Video :stream="model.stream" :is-local="model.isLocal"></Video>
+          </v-row>
+        </v-col> -->
+
+        <!-- <v-row
+          class="blue lighten-4"
+          justify="start"
+          align-content="center"
+          dense
+          style="height: 100%;"
+        >
+          <v-col
+            v-for="(model, index) in rtcManager.getModels()"
+            :key="index"
+            xs="12"
+            sm="6"
+            md="4"
+          >
+            <Video :stream="model.stream" :is-local="model.isLocal"></Video>
+          </v-col>
+        </v-row> -->
       </v-container>
     </v-content>
   </v-app>

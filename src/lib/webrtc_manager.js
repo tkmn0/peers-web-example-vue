@@ -8,6 +8,7 @@ export default class WebRTCManager {
    * @type {MediaStream}
    */
   localStream = null;
+
   /**
    * @type {SocketIOClient.Socket}
    */
@@ -21,7 +22,7 @@ export default class WebRTCManager {
   /**
    * @type {WebRTCClient}
    */
-  localClient;
+  localClient = new WebRTCClient();
 
   /**
    * @type {WebRTCCallbacks}
@@ -33,15 +34,13 @@ export default class WebRTCManager {
      * @type {WebRTCMediaModel[]}
      */
     const models = [];
-    if (this.localStream) {
-      models.push(
-        new WebRTCMediaModel(
-          this.localClient.id,
-          this.localClient.localStream,
-          true
-        )
-      );
-    }
+    models.push(
+      new WebRTCMediaModel(
+        this.localClient.id,
+        this.localClient.localStream,
+        true
+      )
+    );
     this.rtcClients.forEach(client =>
       models.push(new WebRTCMediaModel(client.id, client.remoteStream, false))
     );
