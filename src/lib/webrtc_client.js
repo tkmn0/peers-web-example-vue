@@ -23,9 +23,24 @@ export default class WebRTCClient {
   rtpSender = [];
 
   /**
+   * @type {MediaStream} local media stream
+   */
+  localStream;
+
+  /**
    * @type {MediaStream} remote media stream
    */
   remoteStream;
+
+  /**
+   * @type {boolean}
+   */
+  isRemoteVideoEnabled;
+
+  /**
+   * @type {boolean}
+   */
+  isRemoteAudioEnabled;
 
   /**
    *
@@ -71,6 +86,7 @@ export default class WebRTCClient {
    */
   addLocalStream = stream => {
     console.log(this.id, " add stream");
+    this.localStream = stream;
     stream
       .getTracks()
       .forEach(track => this.rtpSender.push(this.peer.addTrack(track, stream)));
@@ -124,4 +140,12 @@ export default class WebRTCClient {
       console.log(err);
     }
   };
+
+  onRemoteVideoMuted = () => (this.isRemoteVideoEnabled = false);
+
+  onRemoteVideoUnmuted = () => (this.isRemoteVideoEnabled = true);
+
+  onRemoteAudioMuted = () => (this.isRemoteVideoEnabled = false);
+
+  onRemtoeAudioUnmuted = () => (this.isRemoteAudioEnabled = true);
 }

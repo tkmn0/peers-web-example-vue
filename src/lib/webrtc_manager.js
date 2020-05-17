@@ -1,6 +1,7 @@
 import * as SocketIo from "socket.io-client";
 import WebRTCClient from "./webrtc_client";
 import "./rtc_typedef";
+import WebRTCMediaModel from "./webrtc_media_model";
 
 export default class WebRTCManager {
   /**
@@ -18,6 +19,11 @@ export default class WebRTCManager {
   rtcClients = [];
 
   /**
+   * @type {WebRTCClient}
+   */
+  localClient;
+
+  /**
    * @type {WebRTCCallbacks}
    */
   webrtcCallbacks = {};
@@ -28,18 +34,16 @@ export default class WebRTCManager {
      */
     const models = [];
     if (this.localStream) {
-      models.push({
-        stream: this.localStream,
-        id: this.socketIo.id,
-        isLocal: true
-      });
+      models.push(
+        new WebRTCMediaModel(
+          this.localClient.id,
+          this.localClient.localStream,
+          true
+        )
+      );
     }
     this.rtcClients.forEach(client =>
-      models.push({
-        stream: client.remoteStream,
-        id: client.id,
-        isLocal: false
-      })
+      models.push(new WebRTCMediaModel(client.id, client.remoteStream, false))
     );
     return models;
   };
@@ -73,6 +77,7 @@ export default class WebRTCManager {
     };
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      this.localClient.addLocalStream(this.localStream);
     } catch (err) {
       console.log(err);
     }
@@ -107,6 +112,7 @@ export default class WebRTCManager {
   setupSignalingEvent = () => {
     this.socketIo.on("connect", () => {
       console.log("local socket id: ", this.socketIo.id);
+      this.localClient = new WebRTCClient(this.socketIo.id, null);
     });
     this.socketIo.on("call", evt => this.handleCall(evt.data.ids));
     this.socketIo.on("remote-offer", evt => this.handleRemoteOffer(evt));
@@ -241,7 +247,6 @@ export default class WebRTCManager {
    */
   onDisconnected = id => {
     this.rtcClients = this.rtcClients.filter(x => x.id !== id);
-    this.rtcMediaModels = this.rtcMediaModels.filter(x => x.id !== id);
   };
   //#endregion
 }
