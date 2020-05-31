@@ -1,7 +1,7 @@
 import * as SocketIo from "socket.io-client";
 import WebRTCClient from "./webrtc_client";
 import "./rtc_typedef";
-import WebRTCMediaModel from "./webrtc_media_model";
+// import WebRTCMediaModel from "./webrtc_media_model";
 
 export default class WebRTCManager {
   /**
@@ -20,32 +20,44 @@ export default class WebRTCManager {
   rtcClients = [];
 
   /**
-   * @type {WebRTCClient}
-   */
-  localClient = new WebRTCClient();
-
-  /**
    * @type {WebRTCCallbacks}
    */
   webrtcCallbacks = {};
 
-  getModels = () => {
-    /**
-     * @type {WebRTCMediaModel[]}
-     */
-    const models = [];
-    models.push(
-      new WebRTCMediaModel(
-        this.localClient.id,
-        this.localClient.localStream,
-        true
-      )
-    );
-    this.rtcClients.forEach(client =>
-      models.push(new WebRTCMediaModel(client.id, client.remoteStream, false))
-    );
-    return models;
-  };
+  /**
+   * @type {WebRTCMediaModel[]}
+   */
+  mediaModels = [];
+
+  // getModels = () => {
+  //   /**
+  //    * @type {WebRTCMediaModel[]}
+  //    */
+  //   const models = [];
+  //   if (this.localClient) {
+  //     models.push(
+  //       new WebRTCMediaModel(
+  //         this.localClient.id,
+  //         this.localClient.localStream,
+  //         true,
+  //         this.localClient.isLocalAudioEnabled,
+  //         this.localClient.isLocalVideoEnabled
+  //       )
+  //     );
+  //   }
+  //   this.rtcClients.forEach(client =>
+  //     models.push(
+  //       new WebRTCMediaModel(
+  //         client.id,
+  //         client.remoteStream,
+  //         false,
+  //         client.isRemoteAudioEnabled,
+  //         client.isRemoteVideoEnabled
+  //       )
+  //     )
+  //   );
+  //   return models;
+  // };
 
   roomJoined = () => this.roomId != "";
   roomId = "";
@@ -107,11 +119,20 @@ export default class WebRTCManager {
     });
   };
 
+  toggleLocalAudioMute = () => {
+    this.localClient.toggleLocalAudioMute();
+  };
+
+  toggleLocalVideoMute = () => {
+    this.localClient.toggleLocalVideoMute();
+  };
+
   //#region Websocket
   setupSignalingEvent = () => {
     this.socketIo.on("connect", () => {
       console.log("local socket id: ", this.socketIo.id);
       this.localClient = new WebRTCClient(this.socketIo.id, null);
+      this.rtcClients.push(this.localClient);
     });
     this.socketIo.on("call", evt => this.handleCall(evt.data.ids));
     this.socketIo.on("remote-offer", evt => this.handleRemoteOffer(evt));

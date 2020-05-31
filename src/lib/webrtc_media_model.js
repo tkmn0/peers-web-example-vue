@@ -14,9 +14,21 @@ export default class WebRTCMediaModel {
    */
   id;
 
-  constructor(id, stream, isLocal) {
+  /**
+   * @type {boolean}
+   */
+  isAudioMute;
+
+  /**
+   * @type {boolean}
+   */
+  isVideoMute;
+
+  constructor(id, stream, isLocal, isAudioMute, isVideoMute) {
     this.id = id;
     this.stream = stream;
     this.isLocal = isLocal;
+    this.isAudioMute = isAudioMute;
+    this.isVideoMute = isVideoMute;
   }
 }

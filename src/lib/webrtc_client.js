@@ -43,6 +43,16 @@ export default class WebRTCClient {
   isRemoteAudioEnabled;
 
   /**
+   * @type {boolean}
+   */
+  isLocalVideoEnabled = true;
+
+  /**
+   * @type {boolean}
+   */
+  isLocalAudioEnabled = true;
+
+  /**
    *
    * @param {string} id
    * @param {WebRTCCallbacks} callbacks
@@ -148,4 +158,14 @@ export default class WebRTCClient {
   onRemoteAudioMuted = () => (this.isRemoteVideoEnabled = false);
 
   onRemtoeAudioUnmuted = () => (this.isRemoteAudioEnabled = true);
+
+  toggleLocalAudioMute = () => {
+    this.isLocalAudioEnabled = !this.isLocalAudioEnabled;
+    this.localStream.getAudioTracks()[0].enabled = this.isLocalAudioEnabled;
+  };
+
+  toggleLocalVideoMute = () => {
+    this.isLocalVideoEnabled = !this.isLocalVideoEnabled;
+    this.localStream.getVideoTracks()[0].enabled = this.isLocalVideoEnabled;
+  };
 }

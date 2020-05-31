@@ -35,14 +35,21 @@
           style="height: 100%;"
         >
           <v-col
-            v-for="(model, index) in rtcManager.getModels()"
+            v-for="(client, index) in rtcManager.rtcClients"
             :key="index"
             xs="12"
             sm="6"
             md="4"
             lg="3"
           >
-            <Video :stream="model.stream" :is-local="model.isLocal"></Video>
+            <Video
+              :stream="client.localStream"
+              :is-local="true"
+              :is-video-enable="client.isLocalVideoEnabled"
+              :is-audio-enable="client.isLocalAudioEnabled"
+              @video-button-clicked="toggleLocalVideoMute"
+              @audio-button-clicked="toggleLocalAudioMute"
+            ></Video>
           </v-col>
         </v-row>
       </v-container>
@@ -83,6 +90,12 @@ export default {
       } else {
         this.rtcManager.createRoom();
       }
+    },
+    toggleLocalVideoMute: function() {
+      this.rtcManager.toggleLocalVideoMute();
+    },
+    toggleLocalAudioMute: function() {
+      this.rtcManager.toggleLocalAudioMute();
     }
   }
 };
