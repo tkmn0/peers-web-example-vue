@@ -15,11 +15,24 @@
       class="pa-2"
     ></video>
     <div class="controls">
-      <v-icon v-if="isVideoEnable" color="black">mdi-video</v-icon>
-      <v-icon v-else color="red">mdi-video-off</v-icon>
-      <br />
-      <v-icon v-if="isAudioEnable" color="black">mdi-microphone</v-icon>
-      <v-icon v-else color="red">mdi-microphone-off</v-icon>
+      <div v-if="isLocal">
+        <v-btn icon>
+          <v-icon v-if="isVideoEnable" color="black">mdi-video</v-icon>
+          <v-icon v-else color="red">mdi-video-off</v-icon>
+        </v-btn>
+        <br />
+        <v-btn icon>
+          <v-icon v-if="isAudioEnable" color="black">mdi-microphone</v-icon>
+          <v-icon v-else color="red">mdi-microphone-off</v-icon>
+        </v-btn>
+      </div>
+      <div v-else>
+        <v-icon v-if="isVideoEnable" color="black">mdi-video</v-icon>
+        <v-icon v-else color="red">mdi-video-off</v-icon>
+        <br />
+        <v-icon v-if="isAudioEnable" color="black">mdi-microphone</v-icon>
+        <v-icon v-else color="red">mdi-microphone-off</v-icon>
+      </div>
     </div>
   </v-card>
 </template>
