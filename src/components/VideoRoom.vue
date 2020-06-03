@@ -35,7 +35,7 @@
           style="height: 100%;"
         >
           <v-col
-            v-for="(client, index) in rtcManager.rtcClients"
+            v-for="(mediaModel, index) in rtcManager.mediaModels()"
             :key="index"
             xs="12"
             sm="6"
@@ -43,10 +43,10 @@
             lg="3"
           >
             <Video
-              :stream="client.localStream"
-              :is-local="true"
-              :is-video-enable="client.isLocalVideoEnabled"
-              :is-audio-enable="client.isLocalAudioEnabled"
+              :stream="mediaModel.stream"
+              :is-local="mediaModel.isLocal"
+              :is-video-enable="!mediaModel.isVideoMute"
+              :is-audio-enable="!mediaModel.isAudioMute"
               @video-button-clicked="toggleLocalVideoMute"
               @audio-button-clicked="toggleLocalAudioMute"
             ></Video>

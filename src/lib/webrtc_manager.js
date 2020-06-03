@@ -1,7 +1,8 @@
 import * as SocketIo from "socket.io-client";
 import WebRTCClient from "./webrtc_client";
 import "./rtc_typedef";
-// import WebRTCMediaModel from "./webrtc_media_model";
+// eslint-disable-next-line no-unused-vars
+import WebRTCMediaModel from "./webrtc_media_model";
 
 export default class WebRTCManager {
   /**
@@ -24,41 +25,7 @@ export default class WebRTCManager {
    */
   webrtcCallbacks = {};
 
-  /**
-   * @type {WebRTCMediaModel[]}
-   */
-  mediaModels = [];
-
-  // getModels = () => {
-  //   /**
-  //    * @type {WebRTCMediaModel[]}
-  //    */
-  //   const models = [];
-  //   if (this.localClient) {
-  //     models.push(
-  //       new WebRTCMediaModel(
-  //         this.localClient.id,
-  //         this.localClient.localStream,
-  //         true,
-  //         this.localClient.isLocalAudioEnabled,
-  //         this.localClient.isLocalVideoEnabled
-  //       )
-  //     );
-  //   }
-  //   this.rtcClients.forEach(client =>
-  //     models.push(
-  //       new WebRTCMediaModel(
-  //         client.id,
-  //         client.remoteStream,
-  //         false,
-  //         client.isRemoteAudioEnabled,
-  //         client.isRemoteVideoEnabled
-  //       )
-  //     )
-  //   );
-  //   return models;
-  // };
-
+  mediaModels = () => this.rtcClients.map(x => x.mediaModel);
   roomJoined = () => this.roomId != "";
   roomId = "";
 
@@ -103,12 +70,20 @@ export default class WebRTCManager {
     this.setupSignalingEvent();
   };
 
+  //#region UI event
   joinRoom = roomId => {
-    this.socketIo.emit("joinRoom", {
-      data: {
-        roomId: roomId
+    this.socketIo.emit(
+      "joinRoom",
+      {
+        data: {
+          roomId: roomId
+        }
+      },
+      evt => {
+        console.log("room joined");
+        if (evt) this.updateMediaStatus(this.localClient.mediaModel);
       }
-    });
+    );
     this.roomId = roomId;
   };
 
@@ -116,22 +91,26 @@ export default class WebRTCManager {
     this.socketIo.emit("createRoom", "", evt => {
       this.roomId = evt.data.roomId;
       console.log("room created: ", this.roomId);
+      this.updateMediaStatus(this.localClient.mediaModel);
     });
   };
 
   toggleLocalAudioMute = () => {
     this.localClient.toggleLocalAudioMute();
+    this.updateMediaStatus(this.localClient.mediaModel);
   };
 
   toggleLocalVideoMute = () => {
     this.localClient.toggleLocalVideoMute();
+    this.updateMediaStatus(this.localClient.mediaModel);
   };
+  //#endregion
 
   //#region Websocket
   setupSignalingEvent = () => {
     this.socketIo.on("connect", () => {
       console.log("local socket id: ", this.socketIo.id);
-      this.localClient = new WebRTCClient(this.socketIo.id, null);
+      this.localClient = new WebRTCClient(this.socketIo.id, null, true);
       this.rtcClients.push(this.localClient);
     });
     this.socketIo.on("call", evt => this.handleCall(evt.data.ids));
@@ -148,7 +127,7 @@ export default class WebRTCManager {
   handleCall = ids => {
     console.log("handle call");
     ids.forEach(id => {
-      const rtcClient = new WebRTCClient(id, this.webrtcCallbacks);
+      const rtcClient = new WebRTCClient(id, this.webrtcCallbacks, false);
       this.rtcClients.push(rtcClient);
       rtcClient.addLocalStream(this.localStream);
       rtcClient.createOffer();
@@ -201,7 +180,6 @@ export default class WebRTCManager {
   handleRemoteCandidate = message => {
     const rtcClient = this.rtcClients.find(x => x.id == message.data.id.origin);
     if (!rtcClient) return;
-
     rtcClient.setRemoteCandidate(message.data.candidate);
   };
 
@@ -265,8 +243,26 @@ export default class WebRTCManager {
   /**
    * @type {OnDisconnected}
    */
-  onDisconnected = id => {
-    this.rtcClients = this.rtcClients.filter(x => x.id !== id);
+  onDisconnected = id =>
+    (this.rtcClients = this.rtcClients.filter(x => x.id !== id));
+
+  //#endregion
+
+  //#region MediaStaus
+  /**
+   * @param {WebRTCMediaModel} mediaModel
+   */
+  updateMediaStatus = mediaModel => {
+    if (this.socketIo.connected) {
+      const mediaMessage = {
+        data: {
+          id: this.socketIo.id,
+          isAudioMute: mediaModel.isAudioMute,
+          isVideoMute: mediaModel.isVideoMute
+        }
+      };
+      this.socketIo.emit("mediaUpdated", mediaMessage);
+    }
   };
   //#endregion
 }

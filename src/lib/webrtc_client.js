@@ -1,4 +1,6 @@
 import "./rtc_typedef";
+import "./webrtc_media_model";
+import WebRTCMediaModel from "./webrtc_media_model";
 
 export default class WebRTCClient {
   /**
@@ -33,34 +35,23 @@ export default class WebRTCClient {
   remoteStream;
 
   /**
-   * @type {boolean}
+   * @type {WebRTCMediaModel}
    */
-  isRemoteVideoEnabled;
+  mediaModel = new WebRTCMediaModel();
 
   /**
-   * @type {boolean}
-   */
-  isRemoteAudioEnabled;
-
-  /**
-   * @type {boolean}
-   */
-  isLocalVideoEnabled = true;
-
-  /**
-   * @type {boolean}
-   */
-  isLocalAudioEnabled = true;
-
-  /**
-   *
    * @param {string} id
    * @param {WebRTCCallbacks} callbacks
+   * @param {Boolean} isLocal
    */
-  constructor(id, callbacks) {
+  constructor(id, callbacks, isLocal) {
     this.id = id;
     this.callbacks = callbacks;
+    this.mediaModel.isLocal = isLocal;
     this.peer = this.setupPeerConnection();
+    this.mediaModel.id = id;
+    this.mediaModel.isAudioMute = false;
+    this.mediaModel.isVideoMute = false;
   }
 
   setupPeerConnection = () => {
@@ -70,6 +61,7 @@ export default class WebRTCClient {
     const peer = new RTCPeerConnection(pc_config);
     peer.ontrack = evt => {
       this.remoteStream = evt.streams[0];
+      this.mediaModel.stream = evt.streams[0];
       this.callbacks.OnAddTrack(this.id, evt.streams[0]);
     };
     peer.onicecandidate = evt =>
@@ -97,6 +89,7 @@ export default class WebRTCClient {
   addLocalStream = stream => {
     console.log(this.id, " add stream");
     this.localStream = stream;
+    this.mediaModel.stream = stream;
     stream
       .getTracks()
       .forEach(track => this.rtpSender.push(this.peer.addTrack(track, stream)));
@@ -151,21 +144,21 @@ export default class WebRTCClient {
     }
   };
 
-  onRemoteVideoMuted = () => (this.isRemoteVideoEnabled = false);
+  onRemoteVideoMuted = () => (this.mediaModel.isVideoMute = true);
 
-  onRemoteVideoUnmuted = () => (this.isRemoteVideoEnabled = true);
+  onRemoteVideoUnmuted = () => (this.mediaModel.isVideoMute = false);
 
-  onRemoteAudioMuted = () => (this.isRemoteVideoEnabled = false);
+  onRemoteAudioMuted = () => (this.mediaModel.isAudioMute = true);
 
-  onRemtoeAudioUnmuted = () => (this.isRemoteAudioEnabled = true);
+  onRemtoeAudioUnmuted = () => (this.mediaModel.isAudioMute = false);
 
   toggleLocalAudioMute = () => {
-    this.isLocalAudioEnabled = !this.isLocalAudioEnabled;
-    this.localStream.getAudioTracks()[0].enabled = this.isLocalAudioEnabled;
+    this.mediaModel.isAudioMute = !this.mediaModel.isAudioMute;
+    this.localStream.getAudioTracks()[0].enabled = !this.mediaModel.isAudioMute;
   };
 
   toggleLocalVideoMute = () => {
-    this.isLocalVideoEnabled = !this.isLocalVideoEnabled;
-    this.localStream.getVideoTracks()[0].enabled = this.isLocalVideoEnabled;
+    this.mediaModel.isVideoMute = !this.mediaModel.isVideoMute;
+    this.localStream.getVideoTracks()[0].enabled = !this.mediaModel.isVideoMute;
   };
 }
