@@ -62,3 +62,15 @@
  * @property {string} origin
  * @property {string} destination
  */
+
+/**
+ * @typedef {Object} MediaStatusMessage
+ * @property {DataMediaStatus} data
+ */
+
+/**
+ * @typedef {Object} DataMediaStatus
+ * @property {string} id
+ * @property {boolean} isAudioMute
+ * @property {boolean} isVideoMute
+ */

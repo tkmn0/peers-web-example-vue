@@ -152,6 +152,11 @@ export default class WebRTCClient {
 
   onRemtoeAudioUnmuted = () => (this.mediaModel.isAudioMute = false);
 
+  onRemoteMediaStatusUpdated = message => {
+    this.mediaModel.isAudioMute = message.data.isAudioMute;
+    this.mediaModel.isVideoMute = message.data.isVideoMute;
+  };
+
   toggleLocalAudioMute = () => {
     this.mediaModel.isAudioMute = !this.mediaModel.isAudioMute;
     this.localStream.getAudioTracks()[0].enabled = !this.mediaModel.isAudioMute;

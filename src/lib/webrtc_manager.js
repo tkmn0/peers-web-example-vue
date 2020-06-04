@@ -122,6 +122,9 @@ export default class WebRTCManager {
     this.socketIo.on("remote-disconnected", evt =>
       this.handleRemoteDisconnected(evt.data.id)
     );
+    this.socketIo.on("remote-media-updated", evt =>
+      this.handleRemoteMediaUpdated(evt)
+    );
   };
 
   handleCall = ids => {
@@ -190,6 +193,16 @@ export default class WebRTCManager {
     console.log("handle remote disconnected:", id);
     this.rtcClients = this.rtcClients.filter(x => x.id != id);
   };
+
+  /**
+   * @param {MediaStatusMessage} message
+   */
+  handleRemoteMediaUpdated = message => {
+    const remoteClient = this.rtcClients.find(
+      client => client.id == message.data.id
+    );
+    if (remoteClient) remoteClient.onRemoteMediaStatusUpdated(message);
+  };
   //#endregion
 
   //#region WebRTC Callbacks
@@ -243,8 +256,10 @@ export default class WebRTCManager {
   /**
    * @type {OnDisconnected}
    */
-  onDisconnected = id =>
-    (this.rtcClients = this.rtcClients.filter(x => x.id !== id));
+  onDisconnected = id => {
+    if (this.rtcClients)
+      (this.rtcClients = this.rtcClients.filter(x => x.id !== id));
+  };
 
   //#endregion
 
