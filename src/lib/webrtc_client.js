@@ -60,7 +60,6 @@ export default class WebRTCClient {
     };
     const peer = new RTCPeerConnection(pc_config);
     peer.ontrack = evt => {
-      this.remoteStream = evt.streams[0];
       this.mediaModel.stream = evt.streams[0];
       this.callbacks.OnAddTrack(this.id, evt.streams[0]);
     };
@@ -89,7 +88,7 @@ export default class WebRTCClient {
   addLocalStream = stream => {
     console.log(this.id, " add stream");
     this.localStream = stream;
-    this.mediaModel.stream = stream;
+    if (this.mediaModel.isLocal) this.mediaModel.stream = stream;
     stream
       .getTracks()
       .forEach(track => this.rtpSender.push(this.peer.addTrack(track, stream)));
