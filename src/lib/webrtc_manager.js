@@ -3,6 +3,7 @@ import WebRTCClient from "./webrtc_client";
 import "./rtc_typedef";
 // eslint-disable-next-line no-unused-vars
 import WebRTCMediaModel from "./webrtc_media_model";
+import MessagingHandler from "./messaging_handler";
 
 export default class WebRTCManager {
   /**
@@ -25,6 +26,11 @@ export default class WebRTCManager {
    */
   webrtcCallbacks = {};
 
+  /**
+   * @type {MessagingHandler}
+   */
+  messagingHandler = new MessagingHandler(this.rtcClients, this.localStream);
+
   mediaModels = () => this.rtcClients.map(x => x.mediaModel);
   roomJoined = () => this.roomId != "";
   roomId = "";
@@ -34,6 +40,7 @@ export default class WebRTCManager {
     this.webrtcCallbacks.OnCandidateCreated = this.onCandidateCreated;
     this.webrtcCallbacks.OnAddTrack = this.onAddTrack;
     this.webrtcCallbacks.OnDisconnected = this.onDisconnected;
+    this.messagingHandler.setupCallbacks(this.webrtcCallbacks);
     this.setupWebsocket();
   }
 
@@ -56,6 +63,7 @@ export default class WebRTCManager {
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
       this.localClient.addLocalStream(this.localStream);
+      this.messagingHandler.setupStream(this.localStream);
     } catch (err) {
       console.log(err);
     }
@@ -113,95 +121,24 @@ export default class WebRTCManager {
       this.localClient = new WebRTCClient(this.socketIo.id, null, true);
       this.rtcClients.push(this.localClient);
     });
-    this.socketIo.on("call", evt => this.handleCall(evt.data.ids));
-    this.socketIo.on("remote-offer", evt => this.handleRemoteOffer(evt));
-    this.socketIo.on("remote-answer", evt => this.handleRemoteAnswer(evt));
+    this.socketIo.on("call", evt =>
+      this.messagingHandler.handleCall(evt.data.ids)
+    );
+    this.socketIo.on("remote-offer", evt =>
+      this.messagingHandler.handleRemoteOffer(evt)
+    );
+    this.socketIo.on("remote-answer", evt =>
+      this.messagingHandler.handleRemoteAnswer(evt)
+    );
     this.socketIo.on("remote-candidate", evt =>
-      this.handleRemoteCandidate(evt)
+      this.messagingHandler.handleRemoteCandidate(evt)
     );
     this.socketIo.on("remote-disconnected", evt =>
-      this.handleRemoteDisconnected(evt.data.id)
+      this.messagingHandler.handleRemoteDisconnected(evt.data.id)
     );
     this.socketIo.on("remote-media-updated", evt =>
-      this.handleRemoteMediaUpdated(evt)
+      this.messagingHandler.handleRemoteMediaUpdated(evt)
     );
-  };
-
-  handleCall = ids => {
-    console.log("handle call");
-    ids.forEach(id => {
-      const rtcClient = new WebRTCClient(id, this.webrtcCallbacks, false);
-      this.rtcClients.push(rtcClient);
-      rtcClient.addLocalStream(this.localStream);
-      rtcClient.createOffer();
-    });
-  };
-
-  /**
-   * @param {SignalingMessage} message
-   */
-  handleRemoteOffer = message => {
-    /**
-     * @param {RTCSessionDescription} sdp
-     */
-    const sdp = new RTCSessionDescription({
-      type: "offer",
-      sdp: message.data.sdp
-    });
-
-    const rtcClient = new WebRTCClient(
-      message.data.id.origin,
-      this.webrtcCallbacks
-    );
-    this.rtcClients.push(rtcClient);
-    rtcClient.addLocalStream(this.localStream);
-    rtcClient.setRemoteSdp(sdp);
-  };
-
-  /**
-   * @param {SignalingMessage} message
-   */
-  handleRemoteAnswer(message) {
-    /**
-     * @param {RTCSessionDescription} sdp
-     */
-    const sdp = new RTCSessionDescription({
-      type: "answer",
-      sdp: message.data.sdp
-    });
-
-    const rtcClient = this.rtcClients.find(
-      x => x.id === message.data.id.origin
-    );
-
-    rtcClient.setRemoteSdp(sdp);
-  }
-
-  /**
-   * @param {CandidateMessage} message
-   */
-  handleRemoteCandidate = message => {
-    const rtcClient = this.rtcClients.find(x => x.id == message.data.id.origin);
-    if (!rtcClient) return;
-    rtcClient.setRemoteCandidate(message.data.candidate);
-  };
-
-  /**
-   * @param {string} id
-   */
-  handleRemoteDisconnected = id => {
-    console.log("handle remote disconnected:", id);
-    this.rtcClients = this.rtcClients.filter(x => x.id != id);
-  };
-
-  /**
-   * @param {MediaStatusMessage} message
-   */
-  handleRemoteMediaUpdated = message => {
-    const remoteClient = this.rtcClients.find(
-      client => client.id == message.data.id
-    );
-    if (remoteClient) remoteClient.onRemoteMediaStatusUpdated(message);
   };
   //#endregion
 
