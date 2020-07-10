@@ -36,7 +36,6 @@ export default class MessagingHandler {
     ids.forEach(id => {
       const rtcClient = new WebRTCClient(id, this.webrtcCallbacks, false);
       this.rtcClients.push(rtcClient);
-      console.log(this.localStream);
       rtcClient.addLocalStream(this.localStream);
       rtcClient.createOffer();
     });
