@@ -1,4 +1,4 @@
-import WebRTCClient from "./webrtc_client";
+import WebRTCClient from "../webrtc_client";
 
 export default class WebRTCClientsManager {
   /**

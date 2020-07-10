@@ -58,7 +58,7 @@
 </template>
 
 <script>
-import WebRTCManager from "@/lib/webrtc_manager";
+import WebRTCManager from "@/lib/managers/webrtc_manager";
 import Video from "@/components/Video.vue";
 
 export default {
