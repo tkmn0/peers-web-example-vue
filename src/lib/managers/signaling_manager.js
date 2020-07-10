@@ -52,4 +52,16 @@ export default class SignalingManager {
     );
   };
   //#endregion
+
+  emitLocalMediaStatus = () => {
+    const mediaModel = this.webrtcClientsManager.localClient.mediaModel;
+    const mediaMessage = {
+      data: {
+        id: this.socketIo.id,
+        isAudioMute: mediaModel.isAudioMute,
+        isVideoMute: mediaModel.isVideoMute
+      }
+    };
+    this.socketIo.emit("mediaUpdated", mediaMessage);
+  };
 }

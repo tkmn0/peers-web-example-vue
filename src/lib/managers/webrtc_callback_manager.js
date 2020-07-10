@@ -1,3 +1,4 @@
+import "../rtc_typedef";
 // eslint-disable-next-line no-unused-vars
 import SignalingManager from "./signaling_manager";
 // eslint-disable-next-line no-unused-vars
@@ -26,12 +27,14 @@ export default class WebRTCCallbackManager {
     this.webrtcCallbacks.OnCandidateCreated = this.onCandidateCreated;
     this.webrtcCallbacks.OnAddTrack = this.onAddTrack;
     this.webrtcCallbacks.OnDisconnected = this.onDisconnected;
+    this.webrtcCallbacks.OnMediaStatusUpdated = this.onMediaStatusUpdated;
   }
   //#region WebRTC Callbacks
   /**
    * @type {OnSdpCreated}
    */
   onSdpCreated = (id, sdp) => {
+    if (this.clientIsLocal(id)) return;
     /**
      * @type {SignalingMessage}
      */
@@ -51,6 +54,7 @@ export default class WebRTCCallbackManager {
    * @type {OnCandidateCreated}
    */
   onCandidateCreated = (id, candidate) => {
+    if (this.clientIsLocal(id)) return;
     if (!candidate) return;
     /**
      * @type {CandidateMessage}
@@ -79,12 +83,32 @@ export default class WebRTCCallbackManager {
    * @type {OnDisconnected}
    */
   onDisconnected = id => {
+    if (this.clientIsLocal(id)) return;
     if (this.clientsManager.rtcClients) {
       this.clientsManager.rtcClients = this.clientsManager.rtcClients.filter(
         x => x.id !== id
       );
     }
   };
+
+  /**
+   * @type {OnMediaStatusUpdated}
+   */
+  onMediaStatusUpdated = mediaModel => {
+    if (this.signalingManager.socketIo.connected) {
+      const mediaMessage = {
+        data: {
+          id: this.signalingManager.socketIo.id,
+          isAudioMute: mediaModel.isAudioMute,
+          isVideoMute: mediaModel.isVideoMute
+        }
+      };
+      this.signalingManager.socketIo.emit("mediaUpdated", mediaMessage);
+    }
+  };
+
+  clientIsLocal = id =>
+    this.clientsManager.rtcClients.find(x => x.id == id).mediaModel.isLocal;
 
   //#endregion
 }

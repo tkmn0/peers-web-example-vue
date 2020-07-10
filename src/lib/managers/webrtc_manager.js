@@ -82,10 +82,9 @@ export default class WebRTCManager {
       },
       evt => {
         console.log("room joined");
-        if (evt)
-          this.updateMediaStatus(
-            this.webrtcClientsManager.localClient.mediaModel
-          );
+        if (evt) {
+          this.signalingManager.emitLocalMediaStatus();
+        }
       }
     );
     this.roomId = roomId;
@@ -94,37 +93,17 @@ export default class WebRTCManager {
   createRoom = () => {
     this.signalingManager.socketIo.emit("createRoom", "", evt => {
       this.roomId = evt.data.roomId;
+      this.signalingManager.emitLocalMediaStatus();
       console.log("room created: ", this.roomId);
-      this.updateMediaStatus(this.webrtcClientsManager.localClient.mediaModel);
     });
   };
 
   toggleLocalAudioMute = () => {
     this.webrtcClientsManager.localClient.toggleLocalAudioMute();
-    this.updateMediaStatus(this.webrtcClientsManager.localClient.mediaModel);
   };
 
   toggleLocalVideoMute = () => {
     this.webrtcClientsManager.localClient.toggleLocalVideoMute();
-    this.updateMediaStatus(this.webrtcClientsManager.localClient.mediaModel);
-  };
-  //#endregion
-
-  //#region MediaStaus
-  /**
-   * @param {WebRTCMediaModel} mediaModel
-   */
-  updateMediaStatus = mediaModel => {
-    if (this.signalingManager.socketIo.connected) {
-      const mediaMessage = {
-        data: {
-          id: this.signalingManager.socketIo.id,
-          isAudioMute: mediaModel.isAudioMute,
-          isVideoMute: mediaModel.isVideoMute
-        }
-      };
-      this.signalingManager.socketIo.emit("mediaUpdated", mediaMessage);
-    }
   };
   //#endregion
 }

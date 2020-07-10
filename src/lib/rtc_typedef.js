@@ -1,3 +1,6 @@
+// eslint-disable-next-line no-unused-vars
+import WebRTCMediaModel from "../lib/webrtc_media_model";
+
 /**
  * @callback OnSdpCreated
  * @param {string} id - client id
@@ -27,12 +30,19 @@
  */
 
 /**
+ * @callback OnMediaStatusUpdated
+ * @param {string} id - client id
+ * @param {WebRTCMediaModel} mediaModel
+ */
+
+/**
  * @typedef {Object} WebRTCCallbacks
  * @property {OnSdpCreated} OnSdpCreated
  * @property {OnCandidateCreated} OnCandidateCreated
  * @property {OnAddTrack} OnAddTrack
  * @property {OnRemoveTrack} OnRemoveTrack
  * @property {OnDisconnected} OnDisconnected
+ * @property {OnMediaStatusUpdated} OnMediaStatusUpdated
  */
 
 /**

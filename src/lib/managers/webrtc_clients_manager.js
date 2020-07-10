@@ -35,7 +35,7 @@ export default class WebRTCClientsManager {
   };
 
   createLocalClient = id => {
-    this.localClient = new WebRTCClient(id, null, true);
+    this.localClient = new WebRTCClient(id, this.webrtcCallbacks, true);
     this.rtcClients.push(this.localClient);
   };
 

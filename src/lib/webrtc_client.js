@@ -159,10 +159,12 @@ export default class WebRTCClient {
   toggleLocalAudioMute = () => {
     this.mediaModel.isAudioMute = !this.mediaModel.isAudioMute;
     this.localStream.getAudioTracks()[0].enabled = !this.mediaModel.isAudioMute;
+    this.callbacks.OnMediaStatusUpdated(this.mediaModel);
   };
 
   toggleLocalVideoMute = () => {
     this.mediaModel.isVideoMute = !this.mediaModel.isVideoMute;
     this.localStream.getVideoTracks()[0].enabled = !this.mediaModel.isVideoMute;
+    this.callbacks.OnMediaStatusUpdated(this.mediaModel);
   };
 }
