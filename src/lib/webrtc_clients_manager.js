@@ -1,10 +1,15 @@
 import WebRTCClient from "./webrtc_client";
 
-export default class MessagingHandler {
+export default class WebRTCClientsManager {
   /**
    * @type {WebRTCClient[]} clients
    */
   rtcClients = [];
+
+  /**
+   * @type {WebRTCClient}
+   */
+  localClient;
 
   /**
    * @type {MediaStream}
@@ -19,9 +24,7 @@ export default class MessagingHandler {
   /**
    * @param {WebRTCClient[]} clients
    */
-  constructor(clients) {
-    this.rtcClients = clients;
-  }
+  constructor() {}
 
   setupStream = stream => {
     this.localStream = stream;
@@ -29,6 +32,11 @@ export default class MessagingHandler {
 
   setupCallbacks = callbacks => {
     this.webrtcCallbacks = callbacks;
+  };
+
+  createLocalClient = id => {
+    this.localClient = new WebRTCClient(id, null, true);
+    this.rtcClients.push(this.localClient);
   };
 
   handleCall = ids => {
