@@ -3,6 +3,7 @@ import "../rtc_typedef";
 import WebRTCMediaModel from "../webrtc_media_model";
 import WebRTCClientsManager from "./webrtc_clients_manager";
 import SignalingManager from "./signaling_manager";
+import WebRTCCallbackManager from "./webrtc_callback_manager";
 
 export default class WebRTCManager {
   /**
@@ -11,18 +12,19 @@ export default class WebRTCManager {
   localStream = null;
 
   /**
-   * @type {WebRTCCallbacks}
-   */
-  webrtcCallbacks = {};
-
-  /**
    * @type {WebRTCClientsManager}
    */
   webrtcClientsManager;
+
   /**
    * @type {SignalingManager}
    */
   signalingManager;
+
+  /**
+   * @type {WebRTCCallbackManager}
+   */
+  webRTCCallbackManager;
 
   mediaModels = () =>
     this.webrtcClientsManager.rtcClients.map(x => x.mediaModel);
@@ -30,14 +32,16 @@ export default class WebRTCManager {
   roomId = "";
 
   constructor() {
-    this.webrtcCallbacks.OnSdpCreated = this.onSdpCreated;
-    this.webrtcCallbacks.OnCandidateCreated = this.onCandidateCreated;
-    this.webrtcCallbacks.OnAddTrack = this.onAddTrack;
-    this.webrtcCallbacks.OnDisconnected = this.onDisconnected;
     this.webrtcClientsManager = new WebRTCClientsManager();
-    this.webrtcClientsManager.setupCallbacks(this.webrtcCallbacks);
-
     this.signalingManager = new SignalingManager(this.webrtcClientsManager);
+    this.webRTCCallbackManager = new WebRTCCallbackManager(
+      this.signalingManager,
+      this.webrtcClientsManager
+    );
+
+    this.webrtcClientsManager.setupCallbacks(
+      this.webRTCCallbackManager.webrtcCallbacks
+    );
     this.signalingManager.setupWebSocket();
   }
 
@@ -104,67 +108,6 @@ export default class WebRTCManager {
     this.webrtcClientsManager.localClient.toggleLocalVideoMute();
     this.updateMediaStatus(this.webrtcClientsManager.localClient.mediaModel);
   };
-  //#endregion
-
-  //#region WebRTC Callbacks
-  /**
-   * @type {OnSdpCreated}
-   */
-  onSdpCreated = (id, sdp) => {
-    /**
-     * @type {SignalingMessage}
-     */
-    const signalingMessage = {
-      data: {
-        id: {
-          origin: this.signalingManager.socketIo.id,
-          destination: id
-        },
-        sdp: sdp.sdp
-      }
-    };
-    this.signalingManager.socketIo.emit(sdp.type, signalingMessage);
-  };
-
-  /**
-   * @type {OnCandidateCreated}
-   */
-  onCandidateCreated = (id, candidate) => {
-    if (!candidate) return;
-    /**
-     * @type {CandidateMessage}
-     */
-    const candidateMessage = {
-      data: {
-        id: {
-          origin: this.signalingManager.socketIo.id,
-          destination: id
-        },
-        candidate: candidate.toJSON()
-      }
-    };
-
-    this.signalingManager.socketIo.emit("candidate", candidateMessage);
-  };
-
-  /**
-   * @type {OnAddTrack}
-   */
-  onAddTrack = (id, stream) => {
-    console.log(id, " - on add track: ", stream.id);
-  };
-
-  /**
-   * @type {OnDisconnected}
-   */
-  onDisconnected = id => {
-    if (this.webrtcClientsManager.rtcClients) {
-      this.webrtcClientsManager.rtcClients = this.webrtcClientsManager.rtcClients.filter(
-        x => x.id !== id
-      );
-    }
-  };
-
   //#endregion
 
   //#region MediaStaus
