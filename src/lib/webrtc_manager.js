@@ -1,19 +1,14 @@
-import * as SocketIo from "socket.io-client";
 import "./rtc_typedef";
 // eslint-disable-next-line no-unused-vars
 import WebRTCMediaModel from "./webrtc_media_model";
 import WebRTCClientsManager from "./webrtc_clients_manager";
+import SignalingManager from "./signaling_manager";
 
 export default class WebRTCManager {
   /**
    * @type {MediaStream}
    */
   localStream = null;
-
-  /**
-   * @type {SocketIOClient.Socket}
-   */
-  socketIo = null;
 
   /**
    * @type {WebRTCCallbacks}
@@ -23,7 +18,11 @@ export default class WebRTCManager {
   /**
    * @type {WebRTCClientsManager}
    */
-  webrtcClientsManager = new WebRTCClientsManager();
+  webrtcClientsManager;
+  /**
+   * @type {SignalingManager}
+   */
+  signalingManager;
 
   mediaModels = () =>
     this.webrtcClientsManager.rtcClients.map(x => x.mediaModel);
@@ -35,13 +34,17 @@ export default class WebRTCManager {
     this.webrtcCallbacks.OnCandidateCreated = this.onCandidateCreated;
     this.webrtcCallbacks.OnAddTrack = this.onAddTrack;
     this.webrtcCallbacks.OnDisconnected = this.onDisconnected;
+    this.webrtcClientsManager = new WebRTCClientsManager();
     this.webrtcClientsManager.setupCallbacks(this.webrtcCallbacks);
-    this.setupWebsocket();
+
+    this.signalingManager = new SignalingManager(this.webrtcClientsManager);
+    this.signalingManager.setupWebSocket();
   }
 
   destroy() {
-    if (this.socketIo) this.socketIo.disconnect();
-    this.socketIo = null;
+    if (this.signalingManager.socketIo)
+      this.signalingManager.socketIo.disconnect();
+    this.signalingManager.socketIo = null;
     this.webrtcClientsManager.rtcClients = null;
     console.log("webrtc manager destroyed...");
   }
@@ -64,18 +67,9 @@ export default class WebRTCManager {
     }
   };
 
-  setupWebsocket = () => {
-    let url = location.hostname;
-    if (process.env.NODE_ENV == "development") {
-      url += ":3001";
-    }
-    this.socketIo = SocketIo(url);
-    this.setupSignalingEvent();
-  };
-
   //#region UI event
   joinRoom = roomId => {
-    this.socketIo.emit(
+    this.signalingManager.socketIo.emit(
       "joinRoom",
       {
         data: {
@@ -94,7 +88,7 @@ export default class WebRTCManager {
   };
 
   createRoom = () => {
-    this.socketIo.emit("createRoom", "", evt => {
+    this.signalingManager.socketIo.emit("createRoom", "", evt => {
       this.roomId = evt.data.roomId;
       console.log("room created: ", this.roomId);
       this.updateMediaStatus(this.webrtcClientsManager.localClient.mediaModel);
@@ -112,33 +106,6 @@ export default class WebRTCManager {
   };
   //#endregion
 
-  //#region Websocket
-  setupSignalingEvent = () => {
-    this.socketIo.on("connect", () => {
-      console.log("local socket id: ", this.socketIo.id);
-      this.webrtcClientsManager.createLocalClient(this.socketIo.id);
-    });
-    this.socketIo.on("call", evt =>
-      this.webrtcClientsManager.handleCall(evt.data.ids)
-    );
-    this.socketIo.on("remote-offer", evt =>
-      this.webrtcClientsManager.handleRemoteOffer(evt)
-    );
-    this.socketIo.on("remote-answer", evt =>
-      this.webrtcClientsManager.handleRemoteAnswer(evt)
-    );
-    this.socketIo.on("remote-candidate", evt =>
-      this.webrtcClientsManager.handleRemoteCandidate(evt)
-    );
-    this.socketIo.on("remote-disconnected", evt =>
-      this.webrtcClientsManager.handleRemoteDisconnected(evt.data.id)
-    );
-    this.socketIo.on("remote-media-updated", evt =>
-      this.webrtcClientsManager.handleRemoteMediaUpdated(evt)
-    );
-  };
-  //#endregion
-
   //#region WebRTC Callbacks
   /**
    * @type {OnSdpCreated}
@@ -150,13 +117,13 @@ export default class WebRTCManager {
     const signalingMessage = {
       data: {
         id: {
-          origin: this.socketIo.id,
+          origin: this.signalingManager.socketIo.id,
           destination: id
         },
         sdp: sdp.sdp
       }
     };
-    this.socketIo.emit(sdp.type, signalingMessage);
+    this.signalingManager.socketIo.emit(sdp.type, signalingMessage);
   };
 
   /**
@@ -170,14 +137,14 @@ export default class WebRTCManager {
     const candidateMessage = {
       data: {
         id: {
-          origin: this.socketIo.id,
+          origin: this.signalingManager.socketIo.id,
           destination: id
         },
         candidate: candidate.toJSON()
       }
     };
 
-    this.socketIo.emit("candidate", candidateMessage);
+    this.signalingManager.socketIo.emit("candidate", candidateMessage);
   };
 
   /**
@@ -205,15 +172,15 @@ export default class WebRTCManager {
    * @param {WebRTCMediaModel} mediaModel
    */
   updateMediaStatus = mediaModel => {
-    if (this.socketIo.connected) {
+    if (this.signalingManager.socketIo.connected) {
       const mediaMessage = {
         data: {
-          id: this.socketIo.id,
+          id: this.signalingManager.socketIo.id,
           isAudioMute: mediaModel.isAudioMute,
           isVideoMute: mediaModel.isVideoMute
         }
       };
-      this.socketIo.emit("mediaUpdated", mediaMessage);
+      this.signalingManager.socketIo.emit("mediaUpdated", mediaMessage);
     }
   };
   //#endregion
