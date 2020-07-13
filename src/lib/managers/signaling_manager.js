@@ -64,4 +64,13 @@ export default class SignalingManager {
     };
     this.socketIo.emit("mediaUpdated", mediaMessage);
   };
+
+  callToOthers = roomId => {
+    const roomInfo = {
+      data: {
+        roomId: roomId
+      }
+    };
+    this.socketIo.emit("callToOthers", roomInfo);
+  };
 }

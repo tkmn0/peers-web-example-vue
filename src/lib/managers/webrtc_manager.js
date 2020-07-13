@@ -81,21 +81,14 @@ export default class WebRTCManager {
         }
       },
       evt => {
-        console.log("room joined");
         if (evt) {
+          this.roomId = evt.data.roomId;
+          console.log("room joined");
           this.signalingManager.emitLocalMediaStatus();
+          this.signalingManager.callToOthers(this.roomId);
         }
       }
     );
-    this.roomId = roomId;
-  };
-
-  createRoom = () => {
-    this.signalingManager.socketIo.emit("createRoom", "", evt => {
-      this.roomId = evt.data.roomId;
-      this.signalingManager.emitLocalMediaStatus();
-      console.log("room created: ", this.roomId);
-    });
   };
 
   toggleLocalAudioMute = () => {

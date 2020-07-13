@@ -85,11 +85,7 @@ export default {
     },
     call: function() {
       const roomId = this.$route.params.roomId;
-      if (roomId) {
-        this.rtcManager.joinRoom(roomId);
-      } else {
-        this.rtcManager.createRoom();
-      }
+      this.rtcManager.joinRoom(roomId);
     },
     toggleLocalVideoMute: function() {
       this.rtcManager.toggleLocalVideoMute();
