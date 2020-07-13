@@ -53,15 +53,11 @@ export default class WebRTCManager {
     console.log("webrtc manager destroyed...");
   }
 
-  setupLocalStream = async () => {
-    this.testFlag = !this.testFlag;
-    const constraints = {
-      width: { min: 320, ideal: 320, max: 640 },
-      height: { ideal: 360 },
-      video: true,
-      audio: true,
-      facingMode: { exact: "user" }
-    };
+  /**
+   *
+   * @param {MediaStreamConstraints} constraints
+   */
+  setupLocalStream = async constraints => {
     try {
       this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
       this.webrtcClientsManager.localClient.addLocalStream(this.localStream);

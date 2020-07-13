@@ -4,9 +4,7 @@
       <v-container class="grey lighten-5" fluid style="height: 100%">
         <v-spacer></v-spacer>
         <v-toolbar dense flat>
-          <v-btn
-            v-if="rtcManager.localStream == null"
-            @click="rtcManager.setupLocalStream"
+          <v-btn v-if="rtcManager.localStream == null" @click="setupLocalStream"
             >CAMERA</v-btn
           >
           <v-btn v-else-if="!rtcManager.roomJoined()" @click="call">JOIN</v-btn>
@@ -92,6 +90,16 @@ export default {
     },
     toggleLocalAudioMute: function() {
       this.rtcManager.toggleLocalAudioMute();
+    },
+    setupLocalStream: function() {
+      const constraints = {
+        width: { min: 320, ideal: 320, max: 640 },
+        height: { ideal: 360 },
+        video: true,
+        audio: true,
+        facingMode: { exact: "user" }
+      };
+      this.rtcManager.setupLocalStream(constraints);
     }
   }
 };
