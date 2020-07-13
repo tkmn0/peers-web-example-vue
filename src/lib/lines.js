@@ -1,11 +1,11 @@
-import "../rtc_typedef";
+import "./rtc_typedef";
 // eslint-disable-next-line no-unused-vars
-import WebRTCMediaModel from "../webrtc_media_model";
-import WebRTCClientsManager from "./webrtc_clients_manager";
-import SignalingManager from "./signaling_manager";
-import WebRTCCallbackManager from "./webrtc_callback_manager";
+import WebRTCMediaModel from "./webrtc_media_model";
+import WebRTCClientsManager from "./managers/webrtc_clients_manager";
+import SignalingManager from "./managers/signaling_manager";
+import WebRTCCallbackManager from "./managers/webrtc_callback_manager";
 
-export default class WebRTCManager {
+export default class Lines {
   /**
    * @type {MediaStream}
    */

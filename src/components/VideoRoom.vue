@@ -4,12 +4,12 @@
       <v-container class="grey lighten-5" fluid style="height: 100%">
         <v-spacer></v-spacer>
         <v-toolbar dense flat>
-          <v-btn v-if="rtcManager.localStream == null" @click="setupLocalStream"
+          <v-btn v-if="lines.localStream == null" @click="setupLocalStream"
             >CAMERA</v-btn
           >
-          <v-btn v-else-if="!rtcManager.roomJoined()" @click="call">JOIN</v-btn>
+          <v-btn v-else-if="!lines.roomJoined()" @click="call">JOIN</v-btn>
           <v-spacer></v-spacer>
-          <v-btn v-if="rtcManager.roomId" @click="copyLink">
+          <v-btn v-if="lines.roomId" @click="copyLink">
             invite link
           </v-btn>
           <v-snackbar
@@ -33,7 +33,7 @@
           style="height: 100%;"
         >
           <v-col
-            v-for="(mediaModel, index) in rtcManager.mediaModels()"
+            v-for="(mediaModel, index) in lines.mediaModels()"
             :key="index"
             xs="12"
             sm="6"
@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import WebRTCManager from "@/lib/managers/webrtc_manager";
+import Lines from "@/lib/lines";
 import Video from "@/components/Video.vue";
 
 export default {
@@ -64,32 +64,32 @@ export default {
   components: { Video },
   data: function() {
     return {
-      rtcManager: new WebRTCManager(),
+      lines: new Lines(),
       snackbar: false,
       text: "link copied!"
     };
   },
   destroyed: function() {
-    this.rtcManager.destroy();
+    this.lines.destroy();
   },
   methods: {
     copyLink: function() {
       let link = window.location.href;
       if (!this.$route.params.roomId) {
-        link += this.rtcManager.roomId;
+        link += this.lines.roomId;
       }
       navigator.clipboard.writeText(link);
       this.snackbar = true;
     },
     call: function() {
       const roomId = this.$route.params.roomId;
-      this.rtcManager.joinRoom(roomId);
+      this.lines.joinRoom(roomId);
     },
     toggleLocalVideoMute: function() {
-      this.rtcManager.toggleLocalVideoMute();
+      this.lines.toggleLocalVideoMute();
     },
     toggleLocalAudioMute: function() {
-      this.rtcManager.toggleLocalAudioMute();
+      this.lines.toggleLocalAudioMute();
     },
     setupLocalStream: function() {
       const constraints = {
@@ -99,7 +99,7 @@ export default {
         audio: true,
         facingMode: { exact: "user" }
       };
-      this.rtcManager.setupLocalStream(constraints);
+      this.lines.setupLocalStream(constraints);
     }
   }
 };
