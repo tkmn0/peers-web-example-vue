@@ -4,12 +4,12 @@
       <v-container class="grey lighten-5" fluid style="height: 100%">
         <v-spacer></v-spacer>
         <v-toolbar dense flat>
-          <v-btn v-if="lines.localStream == null" @click="setupLocalStream"
+          <v-btn v-if="peers.LocalStream() == null" @click="setupLocalStream"
             >CAMERA</v-btn
           >
-          <v-btn v-else-if="!lines.roomJoined()" @click="call">JOIN</v-btn>
+          <v-btn v-else-if="!peers.RoomJoined()" @click="call">JOIN</v-btn>
           <v-spacer></v-spacer>
-          <v-btn v-if="lines.roomId" @click="copyLink">
+          <v-btn v-if="peers.roomId" @click="copyLink">
             invite link
           </v-btn>
           <v-snackbar
@@ -33,7 +33,7 @@
           style="height: 100%;"
         >
           <v-col
-            v-for="(mediaModel, index) in lines.mediaModels()"
+            v-for="(mediaModel, index) in peers.MediaModels()"
             :key="index"
             xs="12"
             sm="6"
@@ -43,8 +43,8 @@
             <Video
               :stream="mediaModel.stream"
               :is-local="mediaModel.isLocal"
-              :is-video-enable="!mediaModel.isVideoMute"
-              :is-audio-enable="!mediaModel.isAudioMute"
+              :is-video-enable="!mediaModel.isVideoMuted"
+              :is-audio-enable="!mediaModel.isAudioMuted"
               @video-button-clicked="toggleLocalVideoMute"
               @audio-button-clicked="toggleLocalAudioMute"
             ></Video>
@@ -56,42 +56,42 @@
 </template>
 
 <script>
-import Lines from "@/lib/lines";
 import Video from "@/components/Video.vue";
+import Peers from "peers-web";
 
 export default {
   name: "VideoRoom",
   components: { Video },
   data: function() {
     return {
-      lines: new Lines(),
       snackbar: false,
-      text: "link copied!"
+      text: "link copied!",
+      peers: new Peers()
     };
   },
   destroyed: function() {
-    this.lines.destroy();
+    //TODO: destroy peers
   },
   methods: {
     copyLink: function() {
       let link = window.location.href;
       if (!this.$route.params.roomId) {
-        link += this.lines.roomId;
+        link += this.peers.roomId;
       }
       navigator.clipboard.writeText(link);
       this.snackbar = true;
     },
     call: function() {
       const roomId = this.$route.params.roomId;
-      this.lines.joinRoom(roomId);
+      this.peers.joinRoom(roomId);
     },
     toggleLocalVideoMute: function() {
-      this.lines.toggleLocalVideoMute();
+      this.peers.toggleLocalVideoMute();
     },
     toggleLocalAudioMute: function() {
-      this.lines.toggleLocalAudioMute();
+      this.peers.toggleLocalAudioMute();
     },
-    setupLocalStream: function() {
+    setupLocalStream: async function() {
       const constraints = {
         width: { min: 320, ideal: 320, max: 640 },
         height: { ideal: 360 },
@@ -99,7 +99,11 @@ export default {
         audio: true,
         facingMode: { exact: "user" }
       };
-      this.lines.setupLocalStream(constraints);
+
+      const localStream = await navigator.mediaDevices.getUserMedia(
+        constraints
+      );
+      this.peers.addLocalStram(localStream);
     }
   }
 };
