@@ -1,16 +1,16 @@
 {
-  "name": "lines-web",
+  "name": "peers-web-vue-example",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build:dev": "vue-cli-service build --mode development",
     "lint": "vue-cli-service lint",
     "test": "jest"
   },
   "dependencies": {
     "core-js": "^3.6.4",
-    "peers-web": "file:../peers-web",
     "socket.io-client": "^2.3.0",
     "vue": "^2.6.11",
     "vue-router": "^3.1.6",
@@ -29,26 +29,13 @@
     "eslint-plugin-prettier": "^3.1.3",
     "eslint-plugin-vue": "^6.2.2",
     "jest": "^26.0.1",
+    "peers-web": "file:../peers-web",
     "prettier-eslint": "^9.0.1",
     "sass": "^1.19.0",
     "sass-loader": "^8.0.0",
     "vue-cli-plugin-vuetify": "~2.0.5",
     "vue-template-compiler": "^2.6.11",
     "vuetify-loader": "^1.3.0"
-  },
-  "eslintConfig": {
-    "root": true,
-    "env": {
-      "node": true
-    },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {}
   },
   "browserslist": [
     "> 1%",

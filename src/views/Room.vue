@@ -1,6 +1,6 @@
 <template>
   <div class="room">
-    <VideoRoom></VideoRoom>
+    <VideoRoom />
   </div>
 </template>
 

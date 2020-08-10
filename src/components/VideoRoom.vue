@@ -2,13 +2,15 @@
   <v-app id="inspire">
     <v-content>
       <v-container class="grey lighten-5" fluid style="height: 100%">
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-toolbar dense flat>
-          <v-btn v-if="peers.LocalStream() == null" @click="setupLocalStream"
-            >CAMERA</v-btn
-          >
-          <v-btn v-else-if="!peers.RoomJoined()" @click="call">JOIN</v-btn>
-          <v-spacer></v-spacer>
+          <v-btn v-if="peers.LocalStream() == null" @click="setupLocalStream">
+            CAMERA
+          </v-btn>
+          <v-btn v-else-if="!peers.RoomJoined()" @click="call">
+            JOIN
+          </v-btn>
+          <v-spacer />
           <v-btn v-if="peers.roomId" @click="copyLink">
             invite link
           </v-btn>
@@ -47,7 +49,7 @@
               :is-audio-enable="!mediaModel.isAudioMuted"
               @video-button-clicked="toggleLocalVideoMute"
               @audio-button-clicked="toggleLocalAudioMute"
-            ></Video>
+            />
           </v-col>
         </v-row>
       </v-container>
@@ -57,6 +59,7 @@
 
 <script>
 import Video from "@/components/Video.vue";
+// import Peers from "../../../peers-web/dist";
 import Peers from "peers-web";
 
 export default {
@@ -68,6 +71,14 @@ export default {
       text: "link copied!",
       peers: new Peers()
     };
+  },
+  mounted: function() {
+    let uri = window.location.hostname;
+    if (process.env.NODE_ENV === "development") {
+      uri += ":3000";
+    }
+    this.peers.setupConnection(uri);
+    this.peers.setLogLevel("info");
   },
   destroyed: function() {
     //TODO: destroy peers
