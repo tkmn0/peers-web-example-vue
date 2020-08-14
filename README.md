@@ -1,4 +1,4 @@
-# sfu_client_vue
+# peers_client_vue
 
 ## Project setup
 ```
