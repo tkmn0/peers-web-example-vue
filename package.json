@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "core-js": "^3.6.4",
-    "peers-web": "^1.0.1",
+    "peers-web": "^1.0.2",
     "socket.io-client": "^2.3.0",
     "vue": "^2.6.11",
     "vue-router": "^3.1.6",

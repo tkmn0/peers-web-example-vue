@@ -114,7 +114,7 @@ export default {
       const localStream = await navigator.mediaDevices.getUserMedia(
         constraints
       );
-      this.peers.addLocalStram(localStream);
+      this.peers.addLocalStream(localStream);
     }
   }
 };
