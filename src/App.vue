@@ -2,14 +2,7 @@
   <div id="app">
     <v-app-bar app color="blue-grey darken-4" dark>
       <v-spacer />
-      <router-link to="/">
-        Home
-      </router-link>
-      |
-      <router-link to="/room">
-        Room
-      </router-link>
-      <v-btn icon>
+      <v-btn icon @click="linkToGithub()">
         <v-icon>mdi-github</v-icon>
       </v-btn>
     </v-app-bar>
@@ -20,3 +13,13 @@
     </v-footer>
   </div>
 </template>
+
+<script>
+export default {
+  methods: {
+    linkToGithub() {
+      window.open("https://github.com/tkmn0/peers-web-example-vue");
+    }
+  }
+};
+</script>
