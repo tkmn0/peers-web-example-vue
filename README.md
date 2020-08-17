@@ -1,5 +1,9 @@
 # peers_client_vue
+peers example web app with Vue.js.    
 
+## Links
+- [peers-web](https://github.com/tkmn0/peers-web)
+- [peers-server](https://github.com/tkmn0/peers-server)
 ## Project setup
 ```
 npm install
